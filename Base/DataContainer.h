@@ -10,6 +10,7 @@
 #include "TMath.h"
 #include "TObject.h"
 #include "TH1F.h"
+#include "TGraphErrors.h"
 
 #include <map>
 #include <vector>
@@ -18,6 +19,8 @@
 #include <memory>
 #include <TCollection.h>
 #include <iostream>
+#include <TMultiGraph.h>
+#include <TBrowser.h>
 
 #include "DataVector.h"
 #include "QVector.h"
@@ -77,7 +80,7 @@ class DataContainer : public TObject {
  * @param axes vector of axes
  */
   void AddAxes(const std::vector<Axis> &axes) {
-    if (axes.size() != 0) {
+    if (axes.size()!=0) {
       if (integrated_) this->Reset();
       for (const auto &axis : axes) {
         AddAxis(axis);
@@ -310,6 +313,7 @@ class DataContainer : public TObject {
         for (int i = indices.size() - 1; i >= 0; --i) {
           if (isprojected[i]) {
             indices.erase(indices.begin() + i);
+          }
         }
         }
         projection.At(indices) = lambda(projection.At(indices), bin);
@@ -552,7 +556,7 @@ class DataContainer : public TObject {
     auto size = data_.size();
 //    data_.clear();
 //    data_.resize(size);
-    data_.assign(size,T());
+    data_.assign(size, T());
   }
 /**
  * Calculates one dimensional index from a vector of indices.
@@ -633,6 +637,9 @@ class DataContainer : public TObject {
 
  public:
 
+  void NDraw(Option_t *option, std::string axis_name ="") {}
+  void Browse(TBrowser *b) {}
+
 /**
  * Calculates linear index from coordinates
  * returns -1 if outside of range.
@@ -679,9 +686,70 @@ class DataContainer : public TObject {
   }
 
 /// \cond CLASSIMP
- ClassDef(DataContainer, 10);
+ ClassDef(DataContainer, 11);
 /// \endcond
 };
+
+template<>
+inline void DataContainer<Qn::Sample>::Browse(TBrowser *b) {
+  for (auto &axis : axes_) {
+    auto proj = this->Projection({axis.Name()});
+    auto graph = new TGraphErrors((int) proj.size());
+    unsigned int ibin = 0;
+    for (auto &bin : proj) {
+      float xhi = proj.axes_.front().GetUpperBinEdge(ibin);
+      float xlo = proj.axes_.front().GetLowerBinEdge(ibin);
+      float x = xlo + ((xhi - xlo)/2);
+      graph->SetPoint(ibin, x, bin.Mean());
+      graph->SetPointError(ibin, 0, bin.Error());
+      ibin++;
+    }
+    graph->SetName(axis.Name().data());
+    graph->SetTitle(axis.Name().data());
+    b->Add(graph);
+//    graph->SetTitle(this->GetName());
+//    browsables.AddAtAndExpand(graph,i);
+//    browsables->SetOwner(true);
+  }
+}
+
+template<>
+inline void DataContainer<Qn::Sample>::NDraw(Option_t *option, std::string axis_name) {
+  if (axes_.size()==1) {
+    auto graph = new TGraphErrors((int) data_.size());
+    unsigned int ibin = 0;
+    for (auto &bin : data_) {
+      float xhi = axes_.front().GetUpperBinEdge(ibin);
+      float xlo = axes_.front().GetLowerBinEdge(ibin);
+      float x = xlo + ((xhi - xlo)/2);
+      graph->SetPoint(ibin, x, bin.Mean());
+      graph->SetPointError(ibin, 0, bin.Error());
+      ibin++;
+    }
+    graph->SetTitle(this->GetName());
+    graph->Draw(option);
+  } else if (axes_.size()==2) {
+    auto multigraph = new TMultiGraph();
+    Qn::Axis axis = this->GetAxis(axis_name);
+    for (unsigned int ibin = 0; ibin < axis.size(); ++ibin) {
+      auto subdata = this->Select({axis.Name(), {axis.GetLowerBinEdge(ibin), axis.GetUpperBinEdge(ibin)}});
+      auto subgraph = new TGraphErrors((int) subdata.size());
+      unsigned int jbin = 0;
+      for (auto &bin : subdata) {
+        float xhi = subdata.axes_.front().GetUpperBinEdge(jbin);
+        float xlo = subdata.axes_.front().GetLowerBinEdge(jbin);
+        float x = xlo + ((xhi - xlo)/2);
+        subgraph->SetPoint(jbin, x, bin.Mean());
+        subgraph->SetPointError(jbin, 0, bin.Error());
+        jbin++;
+      }
+      subgraph->SetTitle(Form("%.2f - %.2f", axis.GetLowerBinEdge(ibin), axis.GetUpperBinEdge(ibin)));
+      subgraph->SetMarkerStyle(kFullCircle);
+      multigraph->Add(subgraph);
+    }
+    multigraph->Draw(option);
+  }
+}
 
 template<typename T>
 DataContainer<T> operator+(DataContainer<T> a, const DataContainer<T> &b) {
