@@ -17,8 +17,8 @@ namespace Qn {
 struct QVec {
   QVec() = default;
   QVec(float x, float y) : x(x), y(y) {}
-  float x{NAN};
-  float y{NAN};
+  float x{0};
+  float y{0};
   friend QVec operator+(QVec a, QVec b);
   friend QVec operator-(QVec a, QVec b);
   friend QVec operator/(QVec a, float s);
@@ -60,9 +60,9 @@ class QVector {
       sum_weights_ = vector->GetSumOfWeights();
       for (int i = 0; i < 4; i++) {
         if (n_==0 || isnan(vector->Qx(i)) || isnan(vector->Qy(i))) {
-          q_[i] = QVec(NAN, NAN);
-          n_ = 0;
-          sum_weights_ = 0;
+          q_[i] = QVec(0, 0);
+//          n_ = 0;
+//          sum_weights_ = 0;
         } else {
           q_[i] = QVec(vector->Qx(i), vector->Qy(i));
         }

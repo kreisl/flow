@@ -82,5 +82,12 @@ To load the new gcc version one can call:
 
 `$module load gcc/6.4.0`
 
+In order to make `cmake` choose gcc it may be necessary to use the following lines
+
+```bash
+export CC=gcc
+export CXX=g++
+```
+
 It is now possible to follow the guide [above](building-flow.md#building).
 

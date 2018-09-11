@@ -102,6 +102,7 @@ class Sample : public Profile {
     a.mean_ = std::sqrt(std::abs(mean_));
     a.sum_ = std::sqrt(std::abs(sum_));
     a.sum2_ = std::sqrt(std::abs(sum2_));
+    a.binentries_ = std::sqrt(std::abs(binentries_));
 //    a.error_ = 1./2.*a.error_/a.mean_;
     return a;
   }
