@@ -18,6 +18,7 @@
 #define FLOW_TEMPLATEHELPERS_H
 
 #include "ROOT/RIntegerSequence.hxx"
+#include <type_traits>
 
 namespace Qn {
 namespace Correlation {

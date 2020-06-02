@@ -6,7 +6,7 @@ if ("${CMAKE_VERSION}" VERSION_GREATER "3.12.0")
 endif ()
 project(flow VERSION 2.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH 1)
@@ -227,7 +227,7 @@ IF (CMAKE_BUILD_TYPE MATCHES DEBUG)
 ENDIF (CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 add_executable(main main.cpp)
-target_link_libraries(main ${ROOT_LIBRARIES} Base Correlation ToyMC Correction)
+target_link_libraries(main ${ROOT_LIBRARIES} ROOTVecOps Base Correlation ToyMC Correction)
 #
 # Install configuration
 

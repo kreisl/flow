@@ -21,6 +21,7 @@
 #include <array>
 #include <bitset>
 #include <cmath>
+#include <stdexcept>      // std::out_of_range
 
 #include "Rtypes.h"
 

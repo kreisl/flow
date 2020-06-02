@@ -31,7 +31,7 @@ class CorrectionAxisSet {
   CorrectionAxis &At(unsigned int i) { return axes_.at(i); }
   const CorrectionAxis &At(unsigned int i) const { return axes_.at(i); }
   template<typename... ARGS>
-  void Add(ARGS &&... args) { return axes_.emplace_back(std::forward<ARGS>(args)...); }
+  auto Add(ARGS &&... args) { return axes_.emplace_back(std::forward<ARGS>(args)...); }
   void Initialize(const InputVariableManager &variable_manager) {
     for (auto &axis : axes_) {
       axis.Initialize(variable_manager);

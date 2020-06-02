@@ -42,8 +42,13 @@ int main() {
     kPhiNoRotation,
     kPhiNoShift,
     kPhi,
+    kPt,
+    kRapidity,
     kWeight,
   };
+
+  Qn::AxisD pT_axis("pT", 5, 0., 1.);
+  Qn::AxisD rapidity_axis("rapidity", 5, -1., 1.);
 
   Qn::CorrectionManager man;
   man.SetFillOutputTree(true);
@@ -104,6 +109,8 @@ int main() {
       detpsi({"DetPsi", kGranularity, 0, 2*M_PI}, [](const double phi) { return true; });
   detpsi.SetChannelEfficencies(efficiencies.at(0));
   man.AddVariable("weight_psi", kPsiWeight, 1);
+  man.AddVariable("pT", kPt, 1);
+  man.AddVariable("rapidity", kRapidity, 1);
 
   ParticleGenerator<std::mt19937_64, 2, 10000> gen({0., 0.05});
   std::uniform_real_distribution<> psi_distribution(0, 2*M_PI);
@@ -122,7 +129,7 @@ int main() {
   for (unsigned int i = 0; i < detectors_trk.size(); ++i) {
     std::string name = detectors_trk.at(i).Name();
     std::string weight_name = std::string("weight_trk_") + std::to_string(i);
-    man.AddDetector(name, Qn::DetectorType::TRACK, "phi", weight_name, {}, {1, 2});
+    man.AddDetector(name, Qn::DetectorType::TRACK, "phi", weight_name, {pT_axis, rapidity_axis}, {1, 2});
     Qn::Recentering recentering;
     recentering.SetApplyWidthEqualization(false);
     man.AddCorrectionOnQnVector(name, recentering);
@@ -138,6 +145,9 @@ int main() {
     man.AddHisto1D(name, {"phi", 10000, 0, 2*M_PI}, weight_name);
     man.AddHisto1D(name, {"phinorotation", 10000, 0, 2*M_PI}, weight_name);
     man.AddHisto1D(name, {"phinoshift", 10000, 0, 4*M_PI}, weight_name);
+    man.AddHisto1D(name, {"pT", 1000, 0., 1.}, "Ones");
+    man.AddHisto1D(name, {"rapidity", 1000, -1., 1.}, "Ones");
+
   }
 
   std::string weight_name("weight_psi");
@@ -150,7 +160,7 @@ int main() {
   man.SetCurrentRunName("test");
 
   double *values = man.GetVariableContainer();
-  for (int iev = 0; iev < 50000; ++iev) {
+  for (int iev = 0; iev < 5000; ++iev) {
     man.Reset();
     values[kEvent] = 0.5;
     if (man.ProcessEvent()) {
@@ -163,6 +173,8 @@ int main() {
         values[kPhiNoShift] = phi;
         phi = std::atan2(sin(phi), cos(phi)) + M_PI;
         values[kPhiNoRotation] = phino;
+        values[kPt] = (n+0.5)/100.;   // from 0 to 1
+        values[kRapidity] = (n-49.5)/50.;  // from -1 to 1
         int ndettrk = 0;
         for (std::size_t j = 0; j < detectors_trk.size(); ++j) {
           detectors_trk.at(j).Detect(phi);

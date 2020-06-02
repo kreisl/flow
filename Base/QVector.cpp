@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <algorithm>
+#include <cmath>  //isnan
 
 #include "QVector.h"
 
@@ -39,8 +40,8 @@ QVector operator+(const QVector a, const QVector b) {
                  [](const QVec qa, const QVec qb) {
                    QVec ta = {0., 0.};
                    QVec tb = {0., 0.};
-                   if (!(isnan(qa.x) || isnan(qa.y))) ta = qa;
-                   if (!(isnan(qb.x) || isnan(qb.y))) tb = qb;
+                   if (!(std::isnan(qa.x) || std::isnan(qa.y))) ta = qa;
+                   if (!(std::isnan(qb.x) || std::isnan(qb.y))) tb = qb;
                    return ta + tb;
                  });
   c.n_ = at.n_ + bt.n_;
