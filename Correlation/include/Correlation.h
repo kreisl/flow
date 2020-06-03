@@ -126,7 +126,10 @@ class Correlation<Function, std::tuple<Qvectors...>, std::tuple<InputDataContain
       // iterates over all bins of the input data
       for (const auto &bin : input_array[iteration]) {
         // skips empty bins
-        if (bin.n() < 1) continue;
+        if (bin.n() < 1) {
+          ++output_bin;
+          continue;
+        }
         // save pointer to Q vector in an array
         q_array[iteration] = &bin;
         // calculate the output weight
@@ -144,7 +147,10 @@ class Correlation<Function, std::tuple<Qvectors...>, std::tuple<InputDataContain
     // iterates over all bins of the input data.
     for (const auto &bin : input_array[iteration]) {
       // skips empty bins
-      if (bin.n() < 1) continue;
+      if (bin.n() < 1) {
+        ++output_bin;
+        continue;
+      }
       // save pointer to Q vector in an array
       q_array[iteration] = &bin;
       // next step of recursion
